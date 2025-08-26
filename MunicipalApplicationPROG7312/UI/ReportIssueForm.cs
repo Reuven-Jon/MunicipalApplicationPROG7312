@@ -23,6 +23,8 @@ namespace MunicipalApplicationPROG7312.UI
         private readonly Button _btnAttach = new Button();
         private readonly ListBox _lstAttachments = new ListBox();
         private readonly LinkedList<string> _files = new LinkedList<string>();
+        private readonly Button _btnRemove = new Button();  // remove selected attachments
+
 
         // Engagement
         private readonly ProgressBar _progress = new ProgressBar();
@@ -126,30 +128,46 @@ namespace MunicipalApplicationPROG7312.UI
             var right = UiKit.CreateCard(new Rectangle(400, top, 340, 360));
             Controls.Add(right);
 
-            _lblAttach.Text = L10n.T("Lbl_Attachments");
-            _lblAttach.AutoSize = true;
-            _lblAttach.ForeColor = UiKit.Muted;
-            _lblAttach.Location = new Point(16, 16);
-
+            // Attach button (left)
             _btnAttach.Text = L10n.T("Btn_AddFile");
             _btnAttach.Location = new Point(16, 44);
-            _btnAttach.Width = 300;
+            _btnAttach.Width = 180;                       // a bit narrower to fit Remove next to it
             UiKit.StyleGhost(_btnAttach);
             _btnAttach.Click += OnAttachClick;
 
+            // NEW: Remove button (right of Add)
+            _btnRemove.Text = L10n.T("Btn_RemoveFile");   // localised
+            _btnRemove.Location = new Point(16 + 180 + 8, 44); // to the right of Add
+            _btnRemove.Width = 120;
+            UiKit.StyleSecondary(_btnRemove);
+            _btnRemove.Click += OnRemoveClick;
+
+            // List shows AttachmentItem objects (selection can be multi)
             _lstAttachments.Location = new Point(16, 84);
             _lstAttachments.Size = new Size(300, 170);
+            _lstAttachments.SelectionMode = SelectionMode.MultiExtended; // allow multi-select
 
-            _progress.Location = new Point(16, 266);
+            // After building _lstAttachments...
+            _lstAttachments.SelectionMode = SelectionMode.MultiExtended;                 // allow multi-select
+            EventHandler OnAttachmentSelectionChanged = null;
+            _lstAttachments.SelectedIndexChanged += OnAttachmentSelectionChanged;        // toggle Remove
+            KeyEventHandler OnAttachmentsKeyDown = null;
+            _lstAttachments.KeyDown += OnAttachmentsKeyDown;                             // Del key removes
+
+            // Place progress directly under the list so it can’t be “lost” behind anything
+            _progress.Location = new Point(16, _lstAttachments.Bottom + 16);             // y follows list
             _progress.Size = new Size(300, 14);
             _progress.Style = ProgressBarStyle.Continuous;
+            _progress.BringToFront();                                                    // sit on top
 
             _lblProgress.Text = L10n.T("Hint_0");
             _lblProgress.AutoSize = true;
             _lblProgress.ForeColor = UiKit.Muted;
-            _lblProgress.Location = new Point(16, 286);
+            _lblProgress.Location = new Point(16, _progress.Bottom + 6);                 // under bar
+            _lblProgress.BringToFront();
 
-            right.Controls.AddRange(new Control[] { _lblAttach, _btnAttach, _lstAttachments, _progress, _lblProgress });
+            right.Controls.AddRange(new Control[] { _lblAttach, _btnAttach, _btnRemove, _lstAttachments, _progress, _lblProgress });
+
 
             // Batho Pele tag near progress/SLA
             var lblBpStd = new Label
@@ -200,6 +218,16 @@ namespace MunicipalApplicationPROG7312.UI
 
         // ===================== Handlers =====================
 
+        // Holds the full path but displays only the file name in the ListBox.
+        private sealed class AttachmentItem
+        {
+            public string FullPath { get; }
+            public AttachmentItem(string p) { FullPath = p; }                       // store full path
+            public override string ToString() => Path.GetFileName(FullPath);        // show file name
+        }
+
+
+
         private void OnSettingsClicked(object sender, EventArgs e)
         {
             using (var dlg = new SettingsForm())
@@ -222,7 +250,18 @@ namespace MunicipalApplicationPROG7312.UI
 
             Invalidate();                                            // Redraw
         }
+        private void OnAttachmentSelectionChanged(object sender, EventArgs e)
+        {
+            // enable Remove only when something is selected
+            _btnRemove.Enabled = _lstAttachments.SelectedIndices.Count > 0;
+        }
 
+        private void OnAttachmentsKeyDown(object sender, KeyEventArgs e)
+        {
+            // convenience: Delete key removes selection
+            if (e.KeyCode == Keys.Delete && _btnRemove.Enabled)
+                OnRemoveClick(_btnRemove, EventArgs.Empty);
+        }
         private void OnAttachClick(object sender, EventArgs e)
         {
             using (var ofd = new OpenFileDialog
@@ -232,20 +271,55 @@ namespace MunicipalApplicationPROG7312.UI
                 Multiselect = true
             })
             {
-                if (ofd.ShowDialog(this) != DialogResult.OK) return;
+                if (ofd.ShowDialog(this) != DialogResult.OK) return;           // exit if cancelled
 
-                foreach (var path in ofd.FileNames)
+                foreach (var path in ofd.FileNames)                             // iterate chosen files
                 {
-                    if (!File.Exists(path)) continue;                // Guard against stale picks
-                    if (_files.Contains(path)) continue;             // Dedup by full path
-
-                    _files.AddLast(path);                            // LinkedList add
-                    _lstAttachments.Items.Add(Path.GetFileName(path));
+                    if (File.Exists(path) && !_files.Contains(path))            // dedup by full path
+                    {
+                        _files.AddLast(path);                                   // keep in LinkedList
+                        _lstAttachments.Items.Add(new AttachmentItem(path));    // show friendly label
+                    }
                 }
-                UpdateProgress();
-                ValidateFields();                                     // In case attachments are optional step
+                UpdateProgress();                                               // refresh step hint
             }
         }
+
+        // Removes one or more selected attachments both from the ListBox and the LinkedList
+        private void OnRemoveClick(object sender, EventArgs e)
+        {
+            if (_lstAttachments.SelectedIndices.Count == 0)
+            {
+                MessageBox.Show(L10n.T("Msg_SelectFileToRemove"), L10n.T("Title_Remove"));
+                return;
+            }
+
+            // remember the last selected index so we can select the next item afterwards
+            int lastIdx = _lstAttachments.SelectedIndices[_lstAttachments.SelectedIndices.Count - 1];
+
+            // remove bottom-up so indices don’t shift
+            for (int i = _lstAttachments.SelectedIndices.Count - 1; i >= 0; i--)
+            {
+                int idx = _lstAttachments.SelectedIndices[i];
+                var item = _lstAttachments.Items[idx] as AttachmentItem;
+                if (item != null)
+                {
+                    _files.Remove(item.FullPath);            // remove exact path from LinkedList
+                    _lstAttachments.Items.RemoveAt(idx);     // remove from UI
+                }
+            }
+
+            // try select the next logical item so the button stays usable
+            if (_lstAttachments.Items.Count > 0)
+            {
+                int next = Math.Min(lastIdx, _lstAttachments.Items.Count - 1);
+                _lstAttachments.SelectedIndex = next;        // keeps focus and keeps button enabled
+            }
+
+            UpdateProgress();                                // engagement step recalculation
+        }
+
+
 
         // Inline validation: show errors and enable/disable Submit
         private void ValidateFields()
@@ -270,8 +344,9 @@ namespace MunicipalApplicationPROG7312.UI
             if (!string.IsNullOrWhiteSpace(_rtbDescription.Text)) steps++;
             if (_files.Count > 0) steps++;                           // LinkedList count (no LINQ)
             if (_chkConsent.Checked) steps++;
+            if (_files.First != null) steps++;
 
-            _progress.Maximum = 5;
+            _progress.Maximum = 6;
             _progress.Value = steps;
 
             string text;

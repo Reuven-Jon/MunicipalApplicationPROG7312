@@ -50,6 +50,9 @@ namespace MunicipalApplicationPROG7312.Localization
                     ["Submitted_Target"] = "Target response: 48h for sanitation, 72h for roads/utilities.",
                     ["Submitted_Thanks"] = "Thank you for reporting.",
                     ["Submitted_Title"] = "Submitted",
+                    ["Btn_RemoveFile"] = "Remove selected",
+                    ["Msg_SelectFileToRemove"] = "Select one or more attachments to remove.",
+                    ["Title_Remove"] = "Remove attachment",
 
                     // Hints / errors
                     ["Hint_0"] = "Start by adding location",
@@ -111,7 +114,10 @@ namespace MunicipalApplicationPROG7312.Localization
                     ["Title_Consent"] = "Toestemming nodig",
                     ["FD_Title"] = "Kies beelde of dokumente",
                     ["FD_Filter"] = "Beelde en Dokumente|*.png;*.jpg;*.jpeg;*.gif;*.pdf;*.doc;*.docx;*.txt",
-                    ["Err_SubmitGeneric"] = "Ons kon nie jou verslag indien nie."
+                    ["Err_SubmitGeneric"] = "Ons kon nie jou verslag indien nie.",
+                    ["Btn_RemoveFile"] = "Verwyder gekies",
+                    ["Msg_SelectFileToRemove"] = "Kies een of meer aanhangsels om te verwyder.",
+                    ["Title_Remove"] = "Verwyder aanhangsel",
                 },
 
                 ["xh"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -154,7 +160,10 @@ namespace MunicipalApplicationPROG7312.Localization
                     ["Title_Consent"] = "Imvume iyafuneka",
                     ["FD_Title"] = "Khetha imifanekiso okanye amaxwebhu",
                     ["FD_Filter"] = "Imifanekiso neMaxwebhu|*.png;*.jpg;*.jpeg;*.gif;*.pdf;*.doc;*.docx;*.txt",
-                    ["Err_SubmitGeneric"] = "Asikwazanga ukuthumela ingxelo yakho."
+                    ["Err_SubmitGeneric"] = "Asikwazanga ukuthumela ingxelo yakho.",
+                    ["Btn_RemoveFile"] = "Susa okukhethiwe",
+                    ["Msg_SelectFileToRemove"] = "Khetha ifayile enye okanye ezininzi ezinamathiselweyo ukuze uzisuse.",
+                    ["Title_Remove"] = "Susa unamathiselo",
                 },
 
                 ["zu"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -197,7 +206,10 @@ namespace MunicipalApplicationPROG7312.Localization
                     ["Title_Consent"] = "Imvume iyadingeka",
                     ["FD_Title"] = "Khetha izithombe noma imibhalo",
                     ["FD_Filter"] = "Izithombe Nemibhalo|*.png;*.jpg;*.jpeg;*.gif;*.pdf;*.doc;*.docx;*.txt",
-                    ["Err_SubmitGeneric"] = "Asikwazanga ukuthumela umbiko wakho."
+                    ["Err_SubmitGeneric"] = "Asikwazanga ukuthumela umbiko wakho.",
+                    ["Btn_RemoveFile"] = "Susa okukhethiwe",
+                    ["Msg_SelectFileToRemove"] = "Khetha isinamathiselo esisodwa noma eziningi ukuze uzisuse.",
+                    ["Title_Remove"] = "Susa isinamathiselo",
                 }
             };
 

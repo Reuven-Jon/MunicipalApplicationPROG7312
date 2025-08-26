@@ -30,5 +30,10 @@ namespace MunicipalApplicationPROG7312.Persistence
         {
             for (var n = _issues.First; n != null; n = n.Next) yield return n.Value;
         }
+
+        internal Guid Add(Domain.Issue issue)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
