@@ -193,7 +193,7 @@ namespace MunicipalApplicationPROG7312.UI
             UiKit.SizeAndCenter(_btnSubmit, 280, 56);                      // wider 
             _btnSubmit.Location = new Point(right.Right - _btnSubmit.Width, right.Bottom + 16);
             _btnSubmit.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
-            _btnSubmit.Click += OnSubmitClick; 
+            _btnSubmit.Click += OnSubmitClick;  
 
             Controls.Add(_btnBack);
             Controls.Add(_btnSubmit);
