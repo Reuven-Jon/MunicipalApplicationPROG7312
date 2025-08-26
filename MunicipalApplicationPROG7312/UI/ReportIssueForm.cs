@@ -196,7 +196,7 @@ namespace MunicipalApplicationPROG7312.UI
             _btnSubmit.Click += OnSubmitClick;  
 
             Controls.Add(_btnBack);
-            Controls.Add(_btnSubmit);
+            Controls.Add(_btnSubmit); 
             _btnBack.BringToFront();
             _btnSubmit.BringToFront();
 
