@@ -188,7 +188,7 @@ namespace MunicipalApplicationPROG7312.UI
             _btnBack.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
             _btnBack.Click += delegate { Close(); };
              
-            _btnSubmit.Text = "Submit";
+            _btnSubmit.Text = "Submit"; 
             UiKit.StylePrimary(_btnSubmit); 
             UiKit.SizeAndCenter(_btnSubmit, 280, 56);                      // wider 
             _btnSubmit.Location = new Point(right.Right - _btnSubmit.Width, right.Bottom + 16);  
