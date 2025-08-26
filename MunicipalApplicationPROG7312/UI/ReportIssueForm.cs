@@ -203,7 +203,7 @@ namespace MunicipalApplicationPROG7312.UI
             // Keyboard shortcuts
             AcceptButton = _btnSubmit;
             CancelButton = _btnBack;
-
+             
             // Validation triggers (inline; also drives Submit enabled state)
             _txtLocation.TextChanged += (_, __) => { ValidateFields(); UpdateProgress(); };
             _cmbCategory.SelectedIndexChanged += (_, __) => { ValidateFields(); UpdateProgress(); };
