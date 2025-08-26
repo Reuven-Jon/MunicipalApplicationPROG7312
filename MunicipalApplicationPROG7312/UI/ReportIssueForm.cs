@@ -210,7 +210,7 @@ namespace MunicipalApplicationPROG7312.UI
             _rtbDescription.TextChanged += (_, __) => { ValidateFields(); UpdateProgress(); };
             _chkConsent.CheckedChanged += (_, __) => { ValidateFields(); UpdateProgress(); };
 
-            // Initial language rebind + validation + progress
+            // Initial language rebind + validation + progress 
             ApplyLanguage();
             ValidateFields();
             UpdateProgress();
