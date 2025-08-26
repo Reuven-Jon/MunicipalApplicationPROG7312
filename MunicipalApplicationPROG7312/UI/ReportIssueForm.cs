@@ -199,7 +199,7 @@ namespace MunicipalApplicationPROG7312.UI
             Controls.Add(_btnSubmit); 
             _btnBack.BringToFront();
             _btnSubmit.BringToFront();
-
+             
             // Keyboard shortcuts
             AcceptButton = _btnSubmit;
             CancelButton = _btnBack;
