@@ -1,5 +1,5 @@
 # MunicipalApplicationPROG7312
-##📌 Project Overview
+## 📌 Project Overview
 
 This Windows Forms application was developed as part of the PROG7312 POE Part 1 submission.
 It allows residents to:
@@ -14,7 +14,7 @@ Interact with user engagement features such as consent, progress tracking, and m
 
 The project demonstrates the use of advanced C# data structures (LinkedList, Queue, Stack, Dictionary) and a professionally structured UI.
 
-##🚀 Features
+## 🚀 Features
 
 Issue Reporting
 
@@ -56,7 +56,7 @@ Stack<Guid> for recent activity tracking
 
 LinkedList<string> for attachments
 
-##🛠️ Installation & Setup
+## 🛠️ Installation & Setup
 
 Clone or download this repository.
 
@@ -66,7 +66,7 @@ Build the solution with target framework .NET 8.0 (Windows).
 
 Run the application via Ctrl + F5.
 
-##📖 Usage
+## 📖 Usage
 
 Launch the app → the Main Menu will load.
 
@@ -96,7 +96,7 @@ Switch between light/dark mode
 
 Adjust font size
 
-##👨‍💻 Developer Information
+## 👨‍💻 Developer Information
 
 Name: Reuven-Jon Kadalie
 
@@ -104,7 +104,7 @@ Student Number: ST10271460
 
 Module: PROG7312
 
-##⚖️ Notes
+## ⚖️ Notes
 
 No database is required for this submission.
 
