@@ -7,7 +7,7 @@ using MunicipalApplication;                      // UiKit location (if applicabl
 using MunicipalApplicationPROG7312.Persistence;          // SettingsStore (if here)
 using MunicipalApplicationPROG7312.Domain;       // Issue, IssueService
 using MunicipalApplicationPROG7312.Localization; // L10n
-using MunicipalApplicationPROG7312.Persistance;  // IssueStore (spelling per your project)
+
 
 namespace MunicipalApplicationPROG7312.UI
 {
@@ -44,7 +44,7 @@ namespace MunicipalApplicationPROG7312.UI
         private readonly ErrorProvider _errors = new ErrorProvider();
 
         // Application service (store injected; no repository from the form)
-        private readonly IssueService _svc = new IssueService(new IssueStore());
+        private readonly IssueService _svc = new IssueService(IssueStore.Instance);
 
         public ReportIssueForm()
         {
@@ -219,12 +219,12 @@ namespace MunicipalApplicationPROG7312.UI
         // ===================== Handlers =====================
 
         // Holds the full path but displays only the file name in the ListBox.
-        private sealed class AttachmentItem
-        {
-            public string FullPath { get; }
-            public AttachmentItem(string p) { FullPath = p; }                       // store full path
-            public override string ToString() => Path.GetFileName(FullPath);        // show file name
-        }
+      private sealed class AttachmentItem
+{
+    public string FullPath { get; }
+    public AttachmentItem(string p) { FullPath = p; }                       // store full path
+    public override string ToString() => Path.GetFileName(FullPath);        // show file name
+}
 
 
 
