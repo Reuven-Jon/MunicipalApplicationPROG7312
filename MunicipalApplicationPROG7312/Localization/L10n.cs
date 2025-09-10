@@ -73,7 +73,7 @@ namespace MunicipalApplicationPROG7312.Localization
                     ["Err_SubmitGeneric"] = "We could not submit your report."
                 },
 
-                // Add real translations as you progress.
+                // Added real translations as you progress.
                 ["af"] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["Main_Title"] = "Munisipale Verslaggewer",
