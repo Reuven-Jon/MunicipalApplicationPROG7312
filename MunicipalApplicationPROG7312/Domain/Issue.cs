@@ -16,7 +16,7 @@ namespace MunicipalApplicationPROG7312.Domain
         public string Category { get; private set; }      // e.g., Sanitation, Roads
         public string Description { get; private set; }   // Free-text details
 
-        // Attachments: use LinkedList (not List/array) to meet rubric
+        // Attachments: I used LinkedList (not List/array) to meet the rubric
         public LinkedList<string> Attachments { get; } = new LinkedList<string>();
 
         // Workflow
