@@ -22,7 +22,7 @@ namespace MunicipalApplicationPROG7312.Domain
         // Workflow
         public IssueStatus Status { get; set; } = IssueStatus.New;
 
-        // POPIA consent (these fix your compile errors)
+        // POPIA consent 
         public DateTime ConsentGivenAt { get; set; }              // Timestamp of consent
         public string ConsentTextVersion { get; set; } = "v1";    // Label of consent copy
 
