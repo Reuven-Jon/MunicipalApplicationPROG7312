@@ -39,11 +39,11 @@ namespace MunicipalApplicationPROG7312.UI
             _rb5.Location = new Point(40, 155);
 
             // Localised labels e.g. "1 - Very bad"
-            _rb1.Text = "1 - " + L10n.T("Rating_1");
-            _rb2.Text = "2 - " + L10n.T("Rating_2");
-            _rb3.Text = "3 - " + L10n.T("Rating_3");
-            _rb4.Text = "4 - " + L10n.T("Rating_4");
-            _rb5.Text = "5 - " + L10n.T("Rating_5");
+            _rb1.Text = "1 - " + L10n.T("Very Bad");
+            _rb2.Text = "2 - " + L10n.T("Bad");
+            _rb3.Text = "3 - " + L10n.T("Okay");
+            _rb4.Text = "4 - " + L10n.T("Good");
+            _rb5.Text = "5 - " + L10n.T("Excellent");
 
             // Buttons
             _btnSubmit.Text = L10n.T("Survey_Submit");
