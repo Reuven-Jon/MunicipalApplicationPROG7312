@@ -10,6 +10,11 @@ namespace MunicipalApplicationPROG7312.Persistance
     /// Writes one JSON object per line (JSON Lines) under %AppData%\MunicipalReporter.
     /// Safe to call from UI threads; file writes are locked.
     /// </summary>
+    /// /// <remarks>
+    /// Stores minimal, non-PII survey/consent events to JSON Lines for audit.
+    /// POPIA context: lawful processing & direct marketing rules.
+    /// Info Regulator SA docs: https://inforegulator.org.za/information-regulator-documents/
+    /// </remarks>
     public static class Telemetry
     {
         // Serialises concurrent writers in this process.

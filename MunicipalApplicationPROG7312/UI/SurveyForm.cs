@@ -5,6 +5,8 @@ using MunicipalApplicationPROG7312.Localization;
 
 namespace MunicipalApplicationPROG7312.UI
 {
+    /// <summary>One-question CSAT (1=Very bad … 5=Excellent) shown post-submit.</summary>
+    /// <remarks><see href="https://service-manual.ons.gov.uk/design-system/patterns/feedback"/></remarks>
     // Simple dialog to collect a 1–5 rating with text labels.
     public class SurveyForm : Form
     {
@@ -21,7 +23,7 @@ namespace MunicipalApplicationPROG7312.UI
 
         public SurveyForm()
         {
-            Text = L10n.T("Survey_Title");                            // Window caption
+            Text = L10n.T("Please fill out our survey");                            // Window caption
             ClientSize = new Size(420, 220);                          // Fixed size
             StartPosition = FormStartPosition.CenterParent;           // Center on parent
             FormBorderStyle = FormBorderStyle.FixedDialog;            // Stable layout
