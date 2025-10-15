@@ -270,7 +270,7 @@ namespace MunicipalApplicationPROG7312.UI
                     RefreshGrid();        // live filtering
                     RefreshRecommendations();
                 };
-
+                
                 // chip-ish feel
                 chk.FlatStyle = FlatStyle.Flat;
                 chk.Padding = new Padding(6, 2, 6, 2);
