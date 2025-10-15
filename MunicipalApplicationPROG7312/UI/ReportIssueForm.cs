@@ -3,26 +3,23 @@ using System.Collections.Generic;                 // LinkedList<T>
 using System.Drawing;                             // Point, Size, Rectangle
 using System.IO;                                  // Path, File
 using System.Windows.Forms;                       // WinForms controls
-using MunicipalApplicationPROG7312.Domain;        // IssueService
+using MunicipalApplicationPROG7312.Domain;        // IssueStatus, IssueService
 using MunicipalApplicationPROG7312.Localization;  // L10n
-using MunicipalApplicationPROG7312.Persistence;   // IssueStore, SettingsStore
+using MunicipalApplicationPROG7312.Persistence;   // IssueStore, SettingsStore, IssueRegistry, EventHub
+
+// --- Type aliases to avoid 'Issue' ambiguity ---
+using DomIssue = MunicipalApplicationPROG7312.Domain.Issue;
+using DomStatus = MunicipalApplicationPROG7312.Domain.IssueStatus;
 
 namespace MunicipalApplicationPROG7312.UI
 {
     /// <summary>
     /// Report flow: location, category, description, attachments (add/remove),
     /// POPIA consent, progress hints, submit + micro-survey.
-    /// Uses LinkedList for attachments and IssueStore for data (no Lists/arrays for rubric). 
-    /// Shows ticket status and SLA text after submit; then triggers a 1–5 micro-survey. 
-    /// <remarks>
-    /// Transparency & redress align with Batho Pele:
-    /// DPSA Batho Pele Handbook (2014) – https://www.dpsa.gov.za/dpsa2g/documents/cdw/2014/BathoPeleHandbook.pdf
-    /// Micro-survey pattern is based on public-service CSAT/Single-Ease guidance:
-    /// GOV.UK Service Manual – Measuring satisfaction:
-    /// https://www.gov.uk/service-manual/measuring-success/measuring-user-satisfaction
-    /// ONS Design System – Feedback pattern:
-    /// https://service-manual.ons.gov.uk/design-system/patterns/feedback
-    /// </remarks>
+    /// Uses LinkedList for attachments and IssueStore for data (no Lists/arrays for rubric).
+    /// Also updates central Dictionary/Queue/Stack (IssueRegistry) and exposes:
+    /// - Undo Last Reported (Stack pop)
+    /// - Assign Next Pending (Queue dequeue)
     /// </summary>
     public sealed class ReportIssueForm : Form
     {
@@ -42,15 +39,22 @@ namespace MunicipalApplicationPROG7312.UI
         private readonly ProgressBar _progress = new ProgressBar();
         private readonly Label _lblProgress = new Label();
 
-        // ---------- Actions ----------
+        // ---------- Actions (footer) ----------
         private readonly Button _btnSubmit = new Button();
         private readonly Button _btnBack = new Button();
+        private readonly Button _btnUndoLast = new Button();       // Stack pop
+        private readonly Button _btnAssignNext = new Button();     // Queue dequeue
+
+        // Footer layout container
+        private readonly TableLayoutPanel _footer = new TableLayoutPanel();
 
         // ---------- Labels ----------
         private readonly Label _lblLocation = new Label();
         private readonly Label _lblCategory = new Label();
         private readonly Label _lblDescription = new Label();
         private readonly Label _lblAttach = new Label();
+        private readonly PictureBox _logo = new PictureBox();
+
 
         // ---------- Inline validation ----------
         private readonly ErrorProvider _errors = new ErrorProvider();
@@ -68,10 +72,9 @@ namespace MunicipalApplicationPROG7312.UI
 
         public ReportIssueForm()
         {
-            // Base look and font-scaling. UiKit also wires FontChanged → RelayoutForFont.
             UiKit.ApplyTheme(this);
             Text = L10n.T("Btn_Report");
-            ClientSize = new Size(760, 580);
+            ClientSize = new Size(760, 640);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
 
@@ -193,23 +196,51 @@ namespace MunicipalApplicationPROG7312.UI
             };
             Controls.Add(lblBpStd);
 
-            // ---------- Footer buttons ----------
+            // ---------- Footer (2x2 grid: Back | Submit  ;  Assign Next | Undo Last) ----------
+            _footer.ColumnCount = 2;
+            _footer.RowCount = 2;
+            _footer.ColumnStyles.Clear();
+            _footer.RowStyles.Clear();
+            _footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+            _footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+            _footer.RowStyles.Add(new RowStyle(SizeType.Absolute, 56f));
+            _footer.RowStyles.Add(new RowStyle(SizeType.Absolute, 56f));
+            _footer.Padding = new Padding(16, 8, 16, 16);
+            _footer.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+            _footer.Size = new Size(ClientSize.Width - 40, 56 * 2 + _footer.Padding.Vertical + 8);
+            _footer.Location = new Point(20, right.Bottom + 20);
+            _footer.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+
+            // Configure buttons and add to grid
+            // Row 0
             _btnBack.Text = L10n.T("Btn_Back");
             UiKit.StyleSecondary(_btnBack);
-            UiKit.SizeAndCenter(_btnBack, 280, 52);
-            _btnBack.Location = new Point(left.Left, left.Bottom + 20);
-            _btnBack.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
+            _btnBack.Dock = DockStyle.Fill;
             _btnBack.Click += (_, __) => Close();
 
             _btnSubmit.Text = "Submit";
             UiKit.StylePrimary(_btnSubmit);
-            UiKit.SizeAndCenter(_btnSubmit, 280, 56);
-            _btnSubmit.Location = new Point(right.Right - _btnSubmit.Width, right.Bottom + 16);
-            _btnSubmit.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+            _btnSubmit.Dock = DockStyle.Fill;
             _btnSubmit.Click += OnSubmitClick;
 
-            Controls.Add(_btnBack);
-            Controls.Add(_btnSubmit);
+            // Row 1
+            _btnAssignNext.Text = "Assign Next Pending";
+            UiKit.StyleSecondary(_btnAssignNext);
+            _btnAssignNext.Dock = DockStyle.Fill;
+            _btnAssignNext.Click += OnAssignNextClick;
+
+            _btnUndoLast.Text = "Undo Last Reported";
+            UiKit.StyleGhost(_btnUndoLast);
+            _btnUndoLast.Dock = DockStyle.Fill;
+            _btnUndoLast.Click += OnUndoLastClick;
+
+            // Add to table
+            _footer.Controls.Add(_btnBack, 0, 0);
+            _footer.Controls.Add(_btnSubmit, 1, 0);
+            _footer.Controls.Add(_btnAssignNext, 0, 1);
+            _footer.Controls.Add(_btnUndoLast, 1, 1);
+
+            Controls.Add(_footer);
 
             // Keyboard shortcuts
             AcceptButton = _btnSubmit;
@@ -226,6 +257,9 @@ namespace MunicipalApplicationPROG7312.UI
             ValidateFields();
             UpdateProgress();
             UiKit.RelayoutForFont(this); // final pass
+
+            // Enable/disable rubric buttons based on current registry state
+            UpdateRubricButtonsEnabled();
         }
 
         // ========== Settings/theme/language ==========
@@ -347,23 +381,109 @@ namespace MunicipalApplicationPROG7312.UI
             _lblProgress.Text = text;
         }
 
+        // ===== Helper: resolve Issue from store by Id without LINQ =====
+        private DomIssue? ResolveIssue(Guid id)
+        {
+            foreach (var it in IssueStore.Instance.All())
+                if (it.Id == id) return it;
+            return null;
+        }
+
+        // ===== Helper: set status safely without assuming enum names =====
+        private void SetStatusSafely(ref DomIssue issue, params string[] desiredNames)
+        {
+            // Try desired names
+            for (int i = 0; i < desiredNames.Length; i++)
+            {
+                if (Enum.TryParse<DomStatus>(desiredNames[i], ignoreCase: true, out var parsed))
+                {
+                    issue.Status = parsed;
+                    return;
+                }
+            }
+            // Fallbacks
+            string[] fallbacks = { "InProgress", "Open", "Pending", "New", "Closed", "Cancelled", "Canceled" };
+            for (int i = 0; i < fallbacks.Length; i++)
+            {
+                if (Enum.TryParse<DomStatus>(fallbacks[i], ignoreCase: true, out var parsed2))
+                {
+                    issue.Status = parsed2;
+                    return;
+                }
+            }
+        }
+
+        // ===== Helper: build a caption without assuming a Title property =====
+        private string GetIssueCaption(DomIssue issue)
+        {
+            var t = issue.GetType();
+
+            // Try common names
+            string[] names = { "Title", "Summary", "Subject", "Name" };
+            for (int i = 0; i < names.Length; i++)
+            {
+                var p = t.GetProperty(names[i]);
+                if (p != null && p.PropertyType == typeof(string))
+                {
+                    var val = p.GetValue(issue) as string;
+                    if (!string.IsNullOrWhiteSpace(val)) return val!;
+                }
+            }
+
+            // Fallback: Description
+            var descProp = t.GetProperty("Description");
+            if (descProp != null && descProp.PropertyType == typeof(string))
+            {
+                var desc = descProp.GetValue(issue) as string;
+                if (!string.IsNullOrWhiteSpace(desc))
+                {
+                    if (desc!.Length > 60) desc = desc.Substring(0, 60) + "…";
+                    return desc!;
+                }
+            }
+
+            // Fallback: Category
+            var catProp = t.GetProperty("Category");
+            if (catProp != null && catProp.PropertyType == typeof(string))
+            {
+                var cat = catProp.GetValue(issue) as string;
+                if (!string.IsNullOrWhiteSpace(cat)) return $"({cat})";
+            }
+
+            // Final fallback: ID
+            return issue.Id.ToString();
+        }
+
         // ========== Submit ==========
         private void OnSubmitClick(object sender, EventArgs e)
         {
+            // Validate first; bail if not valid
             ValidateFields();
             if (!_btnSubmit.Enabled) return;
 
             try
             {
-                // service API accepts IEnumerable<string> (we pass LinkedList directly)
+                // Submit once
                 var id = _svc.Submit(
                     _txtLocation.Text,
                     _cmbCategory.SelectedItem?.ToString(),
                     _rtbDescription.Text,
-                    _files,                             // IEnumerable<string>
-                    L10n.T("Consent_Text")              // consent copy version
+                    _files,                             // LinkedList<string> OK (IEnumerable<string>)
+                    L10n.T("Consent_Text")
                 );
 
+                // ---- Update Dictionary, Queue, Stack (rubric) ----
+                var created = ResolveIssue(id);               // no LINQ; scans IssueStore
+                if (created != null)
+                {
+                    var reg = IssueRegistry.Instance;
+                    reg.Index[created.Id] = created;          // Dictionary: O(1)
+                    reg.Pending.Enqueue(created.Id);          // Queue: pending FIFO
+                    reg.RecentlyReported.Push(created.Id);    // Stack: LIFO for “recently reported”
+                    EventHub.PublishIssueReported(created);   // optional notify other forms
+                }
+
+                // ---- Existing success UI remains unchanged ----
                 var message =
                     L10n.T("Submitted_Header") + "\n\n" +
                     L10n.T("Submitted_Ticket") + " " + id + "\n" +
@@ -373,7 +493,6 @@ namespace MunicipalApplicationPROG7312.UI
 
                 MessageBox.Show(message, L10n.T("Submitted_Title"));
 
-                // Optional micro-survey dialog (1..5)
                 using (var survey = new SurveyForm())
                 {
                     if (survey.ShowDialog(this) == DialogResult.OK)
@@ -382,12 +501,94 @@ namespace MunicipalApplicationPROG7312.UI
                     }
                 }
 
+                // After a successful submit, buttons may change state for the session
+                UpdateRubricButtonsEnabled();
+
                 Close();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(L10n.T("Err_SubmitGeneric") + "\n" + ex.Message, L10n.T("Title_Error"));
             }
+        }
+
+        // ========== NEW: Assign Next Pending (Queue) ==========
+        private void OnAssignNextClick(object sender, EventArgs e)
+        {
+            var reg = IssueRegistry.Instance;
+            if (reg.Pending.Count == 0)
+            {
+                MessageBox.Show("No pending issues in the queue.", "Assign", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UpdateRubricButtonsEnabled();
+                return;
+            }
+
+            var nextId = reg.Pending.Dequeue();
+            var issue = ResolveIssue(nextId);
+            if (issue == null)
+            {
+                reg.Index.Remove(nextId);
+                MessageBox.Show("The next pending issue could not be found.", "Assign", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                UpdateRubricButtonsEnabled();
+                return;
+            }
+
+            SetStatusSafely(ref issue, "Assigned");
+
+            MessageBox.Show($"Assigned next pending issue:\n\n{GetIssueCaption(issue)}\n(ID: {issue.Id})",
+                "Assigned", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            UpdateRubricButtonsEnabled();
+        }
+
+        // ========== NEW: Undo Last Reported (Stack) ==========
+        private void OnUndoLastClick(object sender, EventArgs e)
+        {
+            var reg = IssueRegistry.Instance;
+            if (reg.RecentlyReported.Count == 0)
+            {
+                MessageBox.Show("No recently reported issues to undo.", "Undo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                UpdateRubricButtonsEnabled();
+                return;
+            }
+
+            var lastId = reg.RecentlyReported.Pop();
+
+            // Remove this ID from the pending queue if still present (Queue<T> has no direct remove)
+            var temp = new Queue<Guid>();
+            while (reg.Pending.Count > 0)
+            {
+                var qid = reg.Pending.Dequeue();
+                if (qid != lastId) temp.Enqueue(qid);
+            }
+            while (temp.Count > 0) reg.Pending.Enqueue(temp.Dequeue());
+
+            // Remove from dictionary
+            reg.Index.Remove(lastId);
+
+            // Also mark the in-store issue with a withdrawn-like status
+            var issue = ResolveIssue(lastId);
+            if (issue != null)
+            {
+                SetStatusSafely(ref issue, "Withdrawn", "Cancelled", "Canceled", "Closed");
+                MessageBox.Show($"Undid last reported issue:\n\n{GetIssueCaption(issue)}\n(ID: {issue.Id})",
+                    "Undo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("The last reported issue was not found in the store. Registry entries have been cleaned.",
+                    "Undo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            UpdateRubricButtonsEnabled();
+        }
+
+        // Enable/disable the two rubric buttons according to registry state
+        private void UpdateRubricButtonsEnabled()
+        {
+            var reg = IssueRegistry.Instance;
+            _btnAssignNext.Enabled = reg.Pending.Count > 0;
+            _btnUndoLast.Enabled = reg.RecentlyReported.Count > 0;
         }
 
         // ========== Language ==========
@@ -402,7 +603,7 @@ namespace MunicipalApplicationPROG7312.UI
             _btnBack.Text = L10n.T("Btn_Back");
             _btnRemove.Text = L10n.T("Btn_RemoveFile");
 
-            // Rebuild category list in current language while trying to preserve current value
+            // Rebuild categories (preserve current selection text if any)
             var keep = _cmbCategory.SelectedItem?.ToString();
             RebuildCategories(keep);
         }
