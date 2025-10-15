@@ -25,7 +25,7 @@ namespace MunicipalApplicationPROG7312.Localization
                 {
                     ["Main_Title"] = "Municipal Reporter",
                     ["Btn_Report"] = "Report issues",
-                    ["Btn_Events"] = "Local events & announcements (coming soon)",
+                    ["Btn_Events"] = "Local events & announcements",
                     ["Btn_Status"] = "Service request status (coming soon)",
                     ["Lbl_Location"] = "Location",
                     ["Lbl_Category"] = "Category",
@@ -33,6 +33,13 @@ namespace MunicipalApplicationPROG7312.Localization
                     ["Lbl_Attachments"] = "Attachments",
                     ["Btn_AddFile"] = "Add image or document",
                     ["Btn_Back"] = "Back to Main Menu",
+                    // Consent copy follows POPIA lawful-processing/direct-marketing guidance.
+                    // Information Regulator SA – Guidance notes & documents:
+                    // https://inforegulator.org.za/information-regulator-documents/
+
+                    // Plain-language approach informed by:
+                    // SciELO SA – Plain language in consumer contracts:
+                    // https://scielo.org.za/scielo.php?script=sci_arttext&pid=S1727-37812013000100008
                     ["Consent_Text"] = "I consent to use of my data to process this report only",
 
                     // Categories (used by Categories() below)
@@ -78,7 +85,7 @@ namespace MunicipalApplicationPROG7312.Localization
                 {
                     ["Main_Title"] = "Munisipale Verslaggewer",
                     ["Btn_Report"] = "Rapporteer probleme",
-                    ["Btn_Events"] = "Plaaslike gebeure en aankondigings (binnekort)",
+                    ["Btn_Events"] = "Plaaslike gebeure en aankondigings",
                     ["Btn_Status"] = "Diensversoekstatus (binnekort)",
                     ["Lbl_Location"] = "Ligging",
                     ["Lbl_Category"] = "Kategorie",
@@ -124,7 +131,7 @@ namespace MunicipalApplicationPROG7312.Localization
                 {
                     ["Main_Title"] = "Umbikishi weMasipala",
                     ["Btn_Report"] = "Xela ingxaki",
-                    ["Btn_Events"] = "Iziganeko neZaziso (iya kufika)",
+                    ["Btn_Events"] = "Iziganeko neZaziso ",
                     ["Btn_Status"] = "Isimo sesicelo senkonzo (iya kufika)",
                     ["Lbl_Location"] = "Indawo",
                     ["Lbl_Category"] = "Udidi",
@@ -170,7 +177,7 @@ namespace MunicipalApplicationPROG7312.Localization
                 {
                     ["Main_Title"] = "Umbikishi Wedolobha",
                     ["Btn_Report"] = "Bika inkinga",
-                    ["Btn_Events"] = "Imicimbi nezaziso (kuyalandela)",
+                    ["Btn_Events"] = "Imicimbi nezaziso ",
                     ["Btn_Status"] = "Isimo sesicelo (kuyalandela)",
                     ["Lbl_Location"] = "Indawo",
                     ["Lbl_Category"] = "Isigaba",

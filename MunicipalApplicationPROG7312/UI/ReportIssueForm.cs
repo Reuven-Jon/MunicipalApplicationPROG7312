@@ -12,7 +12,17 @@ namespace MunicipalApplicationPROG7312.UI
     /// <summary>
     /// Report flow: location, category, description, attachments (add/remove),
     /// POPIA consent, progress hints, submit + micro-survey.
-    /// Uses LinkedList for attachments and IssueStore for data (no Lists/arrays for rubric).
+    /// Uses LinkedList for attachments and IssueStore for data (no Lists/arrays for rubric). 
+    /// Shows ticket status and SLA text after submit; then triggers a 1–5 micro-survey. 
+    /// <remarks>
+    /// Transparency & redress align with Batho Pele:
+    /// DPSA Batho Pele Handbook (2014) – https://www.dpsa.gov.za/dpsa2g/documents/cdw/2014/BathoPeleHandbook.pdf
+    /// Micro-survey pattern is based on public-service CSAT/Single-Ease guidance:
+    /// GOV.UK Service Manual – Measuring satisfaction:
+    /// https://www.gov.uk/service-manual/measuring-success/measuring-user-satisfaction
+    /// ONS Design System – Feedback pattern:
+    /// https://service-manual.ons.gov.uk/design-system/patterns/feedback
+    /// </remarks>
     /// </summary>
     public sealed class ReportIssueForm : Form
     {

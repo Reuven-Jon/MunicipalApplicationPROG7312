@@ -113,11 +113,29 @@ namespace MunicipalApplicationPROG7312.UI
         }
 
         // Update the text of the header label created above
-        public static void SetHeaderTitle(Control header, string title)
+        public static void SetHeaderTitle(Control headerOrHero, string title)
         {
-            foreach (Control c in header.Controls)
-                if (c is Label && c.Name == "__HeaderTitle") { c.Text = title; break; }
+            if (headerOrHero == null) return;
+
+            // Prefer the named Hero label (CreateHero)
+            var heroTitle = headerOrHero.Controls["HeroTitle"] as Label;
+            if (heroTitle != null)
+            {
+                heroTitle.Text = title;
+                return;
+            }
+
+            // Fallback: first label inside a classic header (CreateHeader)
+            foreach (Control c in headerOrHero.Controls)
+            {
+                if (c is Label lbl)
+                {
+                    lbl.Text = title;
+                    return;
+                }
+            }
         }
+
 
         // Add a gear button to the top-right of the given header
         public static Button AddSettingsGear(Panel header, EventHandler onClick)
@@ -321,5 +339,137 @@ namespace MunicipalApplicationPROG7312.UI
             var luminance = (0.2126 * bg.R + 0.7152 * bg.G + 0.0722 * bg.B) / 255.0;
             return luminance > 0.6 ? Color.FromArgb(32, 32, 32) : Color.White;
         }
+
+        // --- Gradient hero header with title + subtitle ---
+        public static Panel CreateHero(string title, string subtitle = null)
+        {
+            var hero = new Panel { Height = 84, Dock = DockStyle.Top, BackColor = Color.Transparent };
+
+            // keep your blue background paint
+            hero.Paint += (s, e) =>
+            {
+                using (var lg = new LinearGradientBrush(
+                    hero.ClientRectangle,
+                    Color.FromArgb(0, 132, 255),     // lighter blue top
+                    Color.FromArgb(0, 100, 210),     // deeper blue bottom
+                    90f))
+                {
+                    e.Graphics.FillRectangle(lg, hero.ClientRectangle);
+                }
+                using (var pen = new Pen(Border))
+                    e.Graphics.DrawLine(pen, 0, hero.Height - 1, hero.Width, hero.Height - 1);
+            };
+
+            var lblTitle = new Label
+            {
+                Name = "HeroTitle",                   // <-- so we can target it later
+                Text = title,
+                AutoSize = true,
+                Font = new Font("Segoe UI Semibold", 16f),
+                ForeColor = Color.White,              // default; we’ll override in MainForm
+                BackColor = Color.Transparent,
+                Location = new Point(20, 14)
+            };
+            hero.Controls.Add(lblTitle);
+
+            if (!string.IsNullOrWhiteSpace(subtitle))
+            {
+                var lblSub = new Label
+                {
+                    Name = "HeroSubtitle",
+                    Text = subtitle,
+                    AutoSize = true,
+                    Font = new Font("Segoe UI", 9.5f),
+                    ForeColor = Color.FromArgb(230, 240, 255),
+                    BackColor = Color.Transparent,
+                    Location = new Point(22, 44)
+                };
+                hero.Controls.Add(lblSub);
+            }
+
+            return hero;
+        }
+
+        public static void SetHeroTitleColor(Control hero, Color color)
+        {
+            var lbl = hero.Controls["HeroTitle"] as Label;
+            if (lbl != null) lbl.ForeColor = color;
+        }
+
+
+        // --- Shadowed card container for content area ---
+        public static Panel CreateShadowCard(Rectangle bounds)
+        {
+            var holder = new Panel { Bounds = new Rectangle(bounds.X + 2, bounds.Y + 6, bounds.Width, bounds.Height), BackColor = Color.Transparent };
+            var card = new Panel { Bounds = new Rectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height), BackColor = Surface };
+            holder.ParentChanged += (s, e) =>
+            {
+                if (holder.Parent != null) holder.Parent.Controls.Add(card);
+                card.BringToFront();
+            };
+            holder.Paint += (s, e) =>
+            {
+                using (var path = new GraphicsPath())
+                using (var shadow = new SolidBrush(Color.FromArgb(40, 0, 0, 0)))
+                {
+                    var r = new Rectangle(card.Left - holder.Left, card.Top - holder.Top, card.Width, card.Height);
+                    int rad = 10; int d = rad * 2;
+                    path.AddArc(r.X, r.Y, d, d, 180, 90);
+                    path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+                    path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+                    path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.TranslateTransform(0, 0);
+                    e.Graphics.FillPath(shadow, path);
+                }
+            };
+
+            // light border
+            card.Paint += (s, e) =>
+            {
+                using (var pen = new Pen(Border))
+                    e.Graphics.DrawRectangle(pen, 0, 0, card.Width - 1, card.Height - 1);
+            };
+
+            holder.Tag = card; // you can access card via (Panel)holder.Tag
+            return holder;
+        }
+
+        // --- Big pill buttons with hover effect ---
+        public static void StyleMenuButton(Button b, bool primary)
+        {
+            b.FlatStyle = FlatStyle.Flat;
+            b.FlatAppearance.BorderSize = primary ? 0 : 1;
+            b.FlatAppearance.BorderColor = primary ? Accent : Accent;
+            b.Font = new Font("Segoe UI Semibold", 11f);
+            b.Height = 48;
+            b.TextAlign = ContentAlignment.MiddleCenter;
+            b.BackColor = primary ? Accent : Surface;
+            b.ForeColor = primary ? Color.White : Accent;
+            RoundCorners(b, 12);
+
+            var normal = b.BackColor;
+            var hover = primary ? Color.FromArgb(0, 105, 190) : Color.FromArgb(240, 244, 248);
+            b.MouseEnter += (_, __) => { b.BackColor = hover; };
+            b.MouseLeave += (_, __) => { b.BackColor = normal; };
+        }
+
+        // --- Small “pill” tag, e.g., (coming soon) ---
+        public static Label Pill(string text, Color fg, Color bg)
+        {
+            var l = new Label
+            {
+                Text = text,
+                AutoSize = true,
+                ForeColor = fg,
+                BackColor = bg,
+                Padding = new Padding(8, 3, 8, 3),
+                Font = new Font("Segoe UI", 9f)
+            };
+            l.Paint += (s, e) => { ApplyRounded(l, 10); };
+            return l;
+        }
+
     }
 }
