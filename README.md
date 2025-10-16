@@ -1,22 +1,14 @@
 # MunicipalApplicationPROG7312
 ## 📌 Project Overview
 
-This Windows Forms application was developed as part of the PROG7312 POE Part 1 submission.
-It allows residents to:
+This Windows Forms application was developed as part of the PROG7312 Portfolio of Evidence (POE) — Parts 1 and 2.
+It allows residents to report municipal service issues, attach media, and track the progress of submitted issues through a dynamic and interactive user interface.
 
-Report municipal service issues
-
-Attach and remove media files (images/documents)
-
-Track issue submission status
-
-Interact with user engagement features such as consent, progress tracking, and multilingual support
-
-The project demonstrates the use of advanced C# data structures (LinkedList, Queue, Stack, Dictionary) and a professionally structured UI.
+The project showcases C# programming mastery through the integration of multiple advanced data structures (LinkedList, Queue, Stack, Dictionary), a modular architecture, and user-friendly UI/UX enhancements.
 
 ## 🚀 Features
 
-Issue Reporting
+### Issue Reporting
 
 Capture location, category, and description of a municipal fault
 
@@ -27,6 +19,41 @@ User Engagement Strategies
 POPIA-aligned consent checkbox (mandatory before submission)
 
 Progress bar fills as each field is completed
+
+### 📊 Issue Tracking & Status Form (Part 2)
+
+The Part 2 implementation introduced the Status Form, which demonstrates practical use of multiple C# collections and data management techniques.
+
+Key Functionalities:
+
+View all reported issues in a data grid.
+
+Track and update issue statuses (e.g., Pending → Resolved).
+
+Rebuild and refresh indexes dynamically from the shared IssueStore.
+
+Search issues by Ticket ID for O(1) lookups.
+
+View recently accessed issues (Stack) and pending ones (Queue).
+
+Update UI counters in real-time to reflect active data structure states.
+
+Data Structure Demonstration:
+Data Structure	Purpose	Implementation
+Dictionary<Guid, Issue>	O(1) lookup of issues by unique ID	_index
+Queue<Guid>	FIFO tracking of pending issues	_pending
+Stack<Guid>	LIFO tracking of recently viewed issues	_recentLookups
+LinkedList<Issue>	Ordered in-memory storage of all issues	IssueStore.Instance.All()
+LinkedList<string>	Attachment path storage	Issue.Attachments
+Additional Enhancements:
+
+Grid auto-refresh for updated data.
+
+Counters and labels to display number of issues, pending, and viewed.
+
+Error handling for invalid searches or missing issues.
+
+Modular architecture with separate UI, Domain, and Persistence layers.
 
 Red ❌ icons highlight empty required fields on startup
 
@@ -68,9 +95,11 @@ Run the application via Ctrl + F5.
 
 ## 📖 Usage
 
-Launch the app → the Main Menu will load.
+Part 1: Report an Issue
 
-Select Report Issue.
+Open the app → Main Menu loads.
+
+Click Report Issue.
 
 Enter:
 
@@ -80,21 +109,27 @@ Category
 
 Description
 
-Attach media files (optional)
+Attach optional media files.
 
-Tick the POPIA Consent Checkbox.
+Tick POPIA Consent checkbox.
 
-Watch the progress bar fill as you complete each field.
+Watch the progress bar fill as you complete fields.
 
-Submit → Success dialog appears with ticket ID & status.
+Click Submit → success message displays with Ticket ID.
 
-Optional:
+Change Font and Language functionality
 
-Change language in Settings
+Part 2: Check Issue Status
 
-Switch between light/dark mode
+From the Main Menu, open Issue Status.
 
-Adjust font size
+View all current issues in the data grid.
+
+Search for an issue using its Ticket ID.
+
+Review issue details and current status.
+
+The Queue, Stack, and Dictionary update automatically as you interact with the form.
 
 ## 👨‍💻 Developer Information
 
